@@ -1,0 +1,6 @@
+{
+  "name": "NEXORA",
+  "description": "Premium Habit & Life Planner with AI assistant RICKY",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

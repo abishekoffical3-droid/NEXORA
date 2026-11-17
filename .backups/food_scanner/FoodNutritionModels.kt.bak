@@ -1,0 +1,15 @@
+package com.example.ai
+
+data class FoodNutritionAnalysis(
+    val foodName: String = "Balanced Meal",
+    val portionSize: String = "1 serving (~250g)",
+    val calories: Int = 380,
+    val proteinGrams: Float = 26f,
+    val carbsGrams: Float = 38f,
+    val fatsGrams: Float = 12f,
+    val vitamins: List<String> = listOf("Vitamin A (20% DV)", "Vitamin C (35% DV)", "Vitamin B12 (15% DV)"),
+    val minerals: List<String> = listOf("Iron (14% DV)", "Calcium (10% DV)", "Potassium (18% DV)"),
+    val healthScore: Int = 85,
+    val summary: String = "Rich in lean protein and essential micronutrients, supporting sustained energy.",
+    val rickyTip: String = "Pair with plenty of water and a 10-minute digestive walk to optimize metabolic health!"
+)

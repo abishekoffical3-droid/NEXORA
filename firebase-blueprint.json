@@ -1,0 +1,160 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and aggregate growth stats",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "email": { "type": "string", "description": "User email address" },
+        "level": { "type": "string", "description": "Current level title" },
+        "xp": { "type": "integer", "description": "Total experience points" },
+        "streak": { "type": "integer", "description": "Current active daily streak" },
+        "bestStreak": { "type": "integer", "description": "Best daily streak achieved" },
+        "lastActiveDate": { "type": "string", "description": "YYYY-MM-DD string of last check-in" },
+        "focusMinutesTotal": { "type": "integer", "description": "All-time focus minutes" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "displayName", "email", "level", "xp", "streak", "bestStreak", "createdAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Daily or scheduled task",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique task ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "description": "Task title" },
+        "notes": { "type": "string", "description": "Optional notes or details" },
+        "category": { "type": "string", "description": "Work, Study, Personal, Health, Code, Other" },
+        "priority": { "type": "string", "description": "LOW, MEDIUM, HIGH, URGENT" },
+        "dueDate": { "type": "string", "description": "YYYY-MM-DD or empty" },
+        "dueTime": { "type": "string", "description": "HH:mm or empty" },
+        "completed": { "type": "boolean", "description": "Completion flag" },
+        "completedAt": { "type": "string", "description": "Timestamp or date string of completion" },
+        "xpAwarded": { "type": "boolean", "description": "Whether XP has already been awarded to prevent farming" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "userId", "title", "category", "priority", "completed", "createdAt"]
+    },
+    "Habit": {
+      "title": "Habit",
+      "description": "Recurring daily or weekly habit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique habit ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "description": "Habit title" },
+        "notes": { "type": "string", "description": "Habit description or cue" },
+        "frequency": { "type": "string", "description": "DAILY, WEEKLY, CUSTOM" },
+        "targetDaysPerWeek": { "type": "integer", "description": "Target days per week" },
+        "completedDates": { "type": "array", "description": "List of YYYY-MM-DD date strings completed" },
+        "currentStreak": { "type": "integer", "description": "Current consecutive streak" },
+        "bestStreak": { "type": "integer", "description": "All time best streak" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "userId", "title", "frequency", "completedDates", "currentStreak", "bestStreak", "createdAt"]
+    },
+    "Goal": {
+      "title": "Goal",
+      "description": "Medium or long term personal objective",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique goal ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "description": "Goal title" },
+        "description": { "type": "string", "description": "Goal details" },
+        "targetDate": { "type": "string", "description": "Target finish date" },
+        "category": { "type": "string", "description": "Goal category" },
+        "progress": { "type": "integer", "description": "Progress percentage (0-100)" },
+        "completed": { "type": "boolean", "description": "Whether goal is completed" },
+        "milestones": { "type": "array", "description": "List of milestone titles or strings" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "userId", "title", "category", "progress", "completed", "createdAt"]
+    },
+    "Routine": {
+      "title": "Routine",
+      "description": "Customizable routine e.g. Morning, Evening, Study",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Routine ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "description": "Routine title" },
+        "category": { "type": "string", "description": "Routine category" },
+        "timeOfDay": { "type": "string", "description": "Morning, Afternoon, Evening, Night" },
+        "items": { "type": "array", "description": "Steps in routine" },
+        "active": { "type": "boolean", "description": "Active status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "userId", "title", "category", "items", "active", "createdAt"]
+    },
+    "FocusSession": {
+      "title": "FocusSession",
+      "description": "Completed or tracked focus timer session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Session ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "durationMinutes": { "type": "integer", "description": "Length of focus in minutes" },
+        "sessionType": { "type": "string", "description": "POMODORO, SHORT_BREAK, LONG_BREAK" },
+        "completed": { "type": "boolean", "description": "Whether session completed without early cancel" },
+        "taskTitle": { "type": "string", "description": "Associated task title or empty" },
+        "xpAwarded": { "type": "boolean", "description": "Whether XP was awarded" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "userId", "durationMinutes", "sessionType", "completed", "createdAt"]
+    },
+    "RickyMessage": {
+      "title": "RickyMessage",
+      "description": "AI Assistant conversational history entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Message ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "role": { "type": "string", "description": "user or model" },
+        "content": { "type": "string", "description": "Message text" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp" }
+      },
+      "required": ["id", "userId", "role", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile and aggregate progression"
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Personal tasks"
+    },
+    "/users/{userId}/habits/{habitId}": {
+      "schema": "Habit",
+      "description": "Personal habits and completion histories"
+    },
+    "/users/{userId}/goals/{goalId}": {
+      "schema": "Goal",
+      "description": "Personal goals and milestones"
+    },
+    "/users/{userId}/routines/{routineId}": {
+      "schema": "Routine",
+      "description": "Daily and weekly routines"
+    },
+    "/users/{userId}/focusSessions/{sessionId}": {
+      "schema": "FocusSession",
+      "description": "Logged focus sessions"
+    },
+    "/users/{userId}/rickyMessages/{messageId}": {
+      "schema": "RickyMessage",
+      "description": "Ricky chat messages"
+    }
+  }
+}

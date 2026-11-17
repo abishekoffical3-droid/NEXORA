@@ -1,0 +1,4 @@
+// Backup reference of FoodAnalyzerCameraScreen.kt (801 lines) and RickyAiService.kt (food analysis lines 181-295) before Food Scanner upgrade.
+// Original FoodAnalyzerCameraScreen.kt SHA/snapshot preserved in git/history and below notes:
+// - FoodNutritionAnalysis fields: foodName, portionSize, calories, proteinGrams, carbsGrams, fatsGrams, vitamins, minerals, healthScore, summary, rickyTip
+// - RickyAiService.analyzeFoodNutrition(bitmap: Bitmap): FoodNutritionAnalysis

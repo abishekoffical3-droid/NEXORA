@@ -1,0 +1,224 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.level is string && data.level.size() <= 50 &&
+             data.xp is int && data.xp >= 0 &&
+             data.streak is int && data.streak >= 0 &&
+             data.bestStreak is int && data.bestStreak >= 0 &&
+             (!('lastActiveDate' in data) || data.lastActiveDate == null || (data.lastActiveDate is string && data.lastActiveDate.size() <= 20)) &&
+             (!('focusMinutesTotal' in data) || data.focusMinutesTotal is int);
+    }
+
+    function isValidTask(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.priority is string && data.priority.size() <= 20 &&
+             data.completed is bool &&
+             (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 2000)) &&
+             (!('dueDate' in data) || data.dueDate == null || (data.dueDate is string && data.dueDate.size() <= 30)) &&
+             (!('dueTime' in data) || data.dueTime == null || (data.dueTime is string && data.dueTime.size() <= 30)) &&
+             (!('completedAt' in data) || data.completedAt == null || (data.completedAt is string && data.completedAt.size() <= 50)) &&
+             (!('xpAwarded' in data) || data.xpAwarded is bool);
+    }
+
+    function isValidHabit(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.frequency is string && data.frequency.size() <= 50 &&
+             data.completedDates is list && data.completedDates.size() <= 1000 &&
+             data.currentStreak is int && data.currentStreak >= 0 &&
+             data.bestStreak is int && data.bestStreak >= 0 &&
+             (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 1000)) &&
+             (!('targetDaysPerWeek' in data) || data.targetDaysPerWeek is int);
+    }
+
+    function isValidGoal(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.progress is int && data.progress >= 0 && data.progress <= 100 &&
+             data.completed is bool &&
+             (!('description' in data) || data.description == null || (data.description is string && data.description.size() <= 2000)) &&
+             (!('targetDate' in data) || data.targetDate == null || (data.targetDate is string && data.targetDate.size() <= 50)) &&
+             (!('milestones' in data) || (data.milestones is list && data.milestones.size() <= 100));
+    }
+
+    function isValidRoutine(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.items is list && data.items.size() <= 100 &&
+             data.active is bool &&
+             (!('timeOfDay' in data) || data.timeOfDay == null || (data.timeOfDay is string && data.timeOfDay.size() <= 50));
+    }
+
+    function isValidFocusSession(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.durationMinutes is int && data.durationMinutes > 0 &&
+             data.sessionType is string && data.sessionType.size() <= 50 &&
+             data.completed is bool &&
+             (!('taskTitle' in data) || data.taskTitle == null || (data.taskTitle is string && data.taskTitle.size() <= 200)) &&
+             (!('xpAwarded' in data) || data.xpAwarded is bool);
+    }
+
+    function isValidRickyMessage(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.role is string && (data.role == 'user' || data.role == 'model') &&
+             data.content is string && data.content.size() <= 10000;
+    }
+
+    // User profile document
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) &&
+                       incoming().userId == userId &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidUserProfile(incoming());
+      allow update: if isOwner(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidUserProfile(incoming());
+      allow delete: if isOwner(userId);
+
+      // Tasks subcollection
+      match /tasks/{taskId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(taskId) &&
+                         incoming().userId == userId &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidTask(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(taskId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidTask(incoming());
+        allow delete: if isOwner(userId) && isValidId(taskId);
+      }
+
+      // Habits subcollection
+      match /habits/{habitId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(habitId) &&
+                         incoming().userId == userId &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidHabit(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(habitId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidHabit(incoming());
+        allow delete: if isOwner(userId) && isValidId(habitId);
+      }
+
+      // Goals subcollection
+      match /goals/{goalId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(goalId) &&
+                         incoming().userId == userId &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidGoal(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(goalId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidGoal(incoming());
+        allow delete: if isOwner(userId) && isValidId(goalId);
+      }
+
+      // Routines subcollection
+      match /routines/{routineId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(routineId) &&
+                         incoming().userId == userId &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidRoutine(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(routineId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidRoutine(incoming());
+        allow delete: if isOwner(userId) && isValidId(routineId);
+      }
+
+      // Focus sessions subcollection
+      match /focusSessions/{sessionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(sessionId) &&
+                         incoming().userId == userId &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidFocusSession(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(sessionId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidFocusSession(incoming());
+        allow delete: if isOwner(userId) && isValidId(sessionId);
+      }
+
+      // Ricky messages subcollection
+      match /rickyMessages/{messageId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(messageId) &&
+                         incoming().userId == userId &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidRickyMessage(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(messageId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidRickyMessage(incoming());
+        allow delete: if isOwner(userId) && isValidId(messageId);
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NEXORA</string>
+    <string name="widget_steps_description">Live step counter, calories, distance, and hydration progress from NEXORA.</string>
+</resources>
